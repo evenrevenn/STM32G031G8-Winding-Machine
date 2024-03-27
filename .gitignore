@@ -1,0 +1,5 @@
+build/*
+*.ioc
+.mxproject
+*.orig
+.vscode/settings.json
