@@ -18,6 +18,7 @@ enum CALL_IDS{
     WAVE_START_ID = 0x10,
     WAVE_PAUSE_ID = 0x11,
     WAVE_STOP_ID = 0x12,
+    WAVE_CONTINUE_ID = 0x13,
     SPEED_CHANGE_ID = 0x20,
     SPEED_INCREASE_ID = 0x21,
     DIRECTION_DRUM_CHANGE_ID = 0x22,
@@ -123,8 +124,9 @@ private:
     bool createSteppers();
     uint16_t wire_thickness_;
     uint32_t guide_steps_;
-    TickType_t guide_frequency_;
-    TickType_t drum_frequency_;
+    uint32_t drum_frequency_HZ_;
+    TickType_t guide_delay_ticks_;
+    TickType_t drum_delay_ticks_;
     task_params::PARAMS_stepper_t PARAMS_stepper_guide_;
     TaskHandle_t TASK_HANDLE_stepper_guide_;
     task_params::PARAMS_stepper_t PARAMS_stepper_drum_;

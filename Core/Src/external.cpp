@@ -6,11 +6,11 @@
 void Encoder::initEncoder()
 {
     /* TURN PINS */
-	GPIOB->CRL &= (GPIO_CRL_CNF3_1);
+	GPIOB->CRL &= ~(GPIO_CRL_CNF3_1);
 	GPIOB->CRL |= GPIO_CRL_CNF3_0;
 	GPIOB->CRL &= ~(GPIO_CRL_MODE3);
 
-    GPIOA->CRH &= (GPIO_CRH_CNF8_1);
+    GPIOA->CRH &= ~(GPIO_CRH_CNF8_1);
 	GPIOA->CRH |= GPIO_CRH_CNF8_0;
 	GPIOA->CRH &= ~(GPIO_CRH_MODE8);
 
@@ -22,7 +22,7 @@ void Encoder::initEncoder()
 	NVIC_EnableIRQ(EXTI3_IRQn);
 
 	/* TODO: CHANGE PINOUT TO ADD BUTTON INTERRUPT */
-	GPIOB->CRL &= (GPIO_CRL_CNF0_1);
+	GPIOB->CRL &= ~(GPIO_CRL_CNF0_1);
 	GPIOB->CRL |= GPIO_CRL_CNF0_0;
 	GPIOB->CRL &= ~(GPIO_CRL_MODE0);
 }
@@ -30,7 +30,7 @@ void Encoder::initEncoder()
 void MicroSwitches::microswitchesSetup()
 {
 	/* LEFT MICROSWITCHES */
-	GPIOA->CRL &= (GPIO_CRL_CNF0_1 | GPIO_CRL_CNF1_1);
+	GPIOA->CRL &= ~(GPIO_CRL_CNF0_1 | GPIO_CRL_CNF1_1);
 	GPIOA->CRL |= GPIO_CRL_CNF0_0 | GPIO_CRL_CNF1_0;
 	GPIOA->CRL &= ~(GPIO_CRL_MODE0 | GPIO_CRL_MODE1);
 
@@ -43,7 +43,7 @@ void MicroSwitches::microswitchesSetup()
 	NVIC_EnableIRQ(EXTI1_IRQn);
 
 	/* RIGHT MICROSWITCHES */
-	GPIOB->CRL &= (GPIO_CRL_CNF4_1 | GPIO_CRL_CNF5_1);
+	GPIOB->CRL &= ~(GPIO_CRL_CNF4_1 | GPIO_CRL_CNF5_1);
 	GPIOB->CRL |= GPIO_CRL_CNF4_0 | GPIO_CRL_CNF5_0;
 	GPIOB->CRL &= ~(GPIO_CRL_MODE4 | GPIO_CRL_MODE5);
 
@@ -62,7 +62,7 @@ extern "C"
 /* Encoder pins handler */
 void EXTI3_IRQHandler()
 {
-	GPIOA->ODR & GPIO_ODR_ODR8 ? Encoder::leftTurnHandler() : Encoder::rightTurnHandler();
+	GPIOA->IDR & GPIO_IDR_IDR8 ? Encoder::leftTurnHandler() : Encoder::rightTurnHandler();
 
 	EXTI->PR |= EXTI_PR_PR3;
 }

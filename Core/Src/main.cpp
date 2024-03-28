@@ -69,8 +69,6 @@ int main(void)
 	/* Set up the clocks and memory interface. */
 	prvSetupHardware();
 
-	MicroSwitches::microswitchesSetup();
-
 	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
 	GPIOC->CRH &= ~(GPIO_CRH_CNF13);
 	GPIOC->CRH |= GPIO_CRH_MODE13;
@@ -80,6 +78,9 @@ int main(void)
 
 	GlobalManager &global_manager = GlobalManager::getInstance();
 	global_manager.createTasks();
+
+	MicroSwitches::microswitchesSetup();
+	Encoder::initEncoder();
 
     /* Start the scheduler. */
 	vTaskStartScheduler();

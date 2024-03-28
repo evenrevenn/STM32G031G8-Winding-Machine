@@ -7,8 +7,10 @@
 
 UARTHandler::UARTHandler():
 buffer_(512),
-vsprintf_buffer_("")
+vsprintf_buffer_(""),
+msg_buffered_(false)
 {
+	initUSART();
 }
 
 void UARTHandler::initUSART()
@@ -45,12 +47,12 @@ void UARTHandler::initUSART()
 UARTHandler &UARTHandler::getInstance()
 {
     static UARTHandler uart_handler;
-	static bool is_first = true;
+	// static bool is_first = true;
 
-	if (is_first){
-		uart_handler.initUSART();
-		is_first = false;
-	}
+	// if (is_first){
+		// uart_handler.initUSART();
+	// 	is_first = false;
+	// }
 
     return uart_handler;
 }
@@ -85,10 +87,16 @@ void UARTHandler::writeToQueue(const QueueHandle_t &queue)
 	static uint8_t item = 0;
 	if (buffer_.readData(&item, 1)){
 		xQueueSendToBack(queue, &item, pdMS_TO_TICKS(10));
-		USART1->CR1 |= USART_CR1_TXEIE;
+		msg_buffered_ = true;
 	}
 	else{
-		vTaskDelay(pdMS_TO_TICKS(10));
+		if (msg_buffered_){
+			msg_buffered_ = false;
+			USART1->CR1 |= USART_CR1_TXEIE;
+		}
+		else{
+			vTaskDelay(pdMS_TO_TICKS(10));
+		}
 	}
 }
 

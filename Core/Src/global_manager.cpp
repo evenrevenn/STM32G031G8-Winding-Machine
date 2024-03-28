@@ -11,10 +11,11 @@ GlobalManager::GlobalManager() : PARAMS_manager_{manager_calls_queue_, manager_c
                                  PARAMS_decoder_{UART_receive_queue_, manager_calls_queue_, manager_calls_semaphhore_},
                                  wire_thickness_(13),
                                  guide_steps_(0),
-                                 guide_frequency_(1),
-                                 drum_frequency_(1),
-                                 PARAMS_stepper_guide_{guide_steps_, guide_frequency_, manager_calls_queue_, manager_calls_semaphhore_},
-                                 PARAMS_stepper_drum_{guide_steps_, guide_frequency_, manager_calls_queue_, manager_calls_semaphhore_}
+                                 drum_frequency_HZ_(10),
+                                 guide_delay_ticks_(100000),
+                                 drum_delay_ticks_(100000),
+                                 PARAMS_stepper_guide_{guide_steps_, guide_delay_ticks_, manager_calls_queue_, manager_calls_semaphhore_},
+                                 PARAMS_stepper_drum_{guide_steps_, drum_delay_ticks_, manager_calls_queue_, manager_calls_semaphhore_}
 {
 }
 
@@ -57,6 +58,9 @@ bool GlobalManager::createTasks()
     return true;
 }
 
+/*--------------------------------------------*/
+/* Call process */
+
 void GlobalManager::readCall(QueueHandle_t call_queue)
 {
     MANAGER_CALL call;
@@ -75,64 +79,78 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
             vTaskSuspend(TASK_HANDLE_stepper_guide_);
             DrumStepper::switchEnable(false);
             GuideStepper::switchEnable(false);
-            print("Movement completed");
+            print("Movement completed\n");
             break;
 
         case MANAGER_CALL_IDS::WAVE_START_ID:
-            /* s(steps) = L(mm) / 2(mm) * 400(steps/rot) */
-            guide_steps_ = call.value / MM_PER_ROTATION * STEPS_PER_ROTATION;
+            /* s(steps) = L(mm) * 400(steps/rot) / 2(mm/rot) */
+            guide_steps_ = call.value * STEPS_PER_ROTATION / MM_PER_ROTATION;
             DrumStepper::switchEnable(true);
             GuideStepper::switchEnable(true);
             vTaskResume(TASK_HANDLE_stepper_drum_);
             vTaskResume(TASK_HANDLE_stepper_guide_);
-            print("Waving started, length: %u mm\n", guide_steps_);
+            print("Waving started, length: %u mm\n", call.value, guide_steps_);
             break;
 
         case MANAGER_CALL_IDS::SPEED_CHANGE_ID:
-            if (call.value <= 1000){
-                drum_frequency_ = DrumStepper::calcHalfPeriod(call.value);
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
-                print("Speed changed: %u steps/sec\n", configTICK_RATE_HZ / 2 / drum_frequency_);
+            if (call.value <= 1000 && call.value > 0){
+                drum_frequency_HZ_ = call.value;
+                drum_delay_ticks_ = DrumStepper::calcHalfPeriod(drum_frequency_HZ_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
+                print("Speed changed: %u steps/sec\n", drum_frequency_HZ_);
             }
             break;
 
-        case MANAGER_CALL_IDS::SPEED_INCREASE_ID:
-            if ((int)call.value > 0 && drum_frequency_ <= DrumStepper::calcHalfPeriod(900)){
-                drum_frequency_ += DrumStepper::calcHalfPeriod(100);
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
-                print("Speed changed: %u steps/sec\n", configTICK_RATE_HZ / 2 / drum_frequency_);
+        case MANAGER_CALL_IDS::SPEED_INCREASE_ID:{
+            int32_t value = *reinterpret_cast<int32_t *>(&call.value);
+
+            if (value > 0 && drum_frequency_HZ_ <= 900){
+                drum_frequency_HZ_ += 100;
+                drum_delay_ticks_ = DrumStepper::calcHalfPeriod(drum_frequency_HZ_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
+                print("Speed changed: %u steps/sec\n", drum_frequency_HZ_);
             }
-            else if ((int)call.value < 0 && drum_frequency_ > DrumStepper::calcHalfPeriod(100)){
-                drum_frequency_ -= DrumStepper::calcHalfPeriod(100);
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
-                print("Speed changed: %u steps/sec\n", configTICK_RATE_HZ / 2 / drum_frequency_);
+            else if (value < 0 && drum_frequency_HZ_ > 100){
+                drum_frequency_HZ_ -= 100;
+                drum_delay_ticks_ = DrumStepper::calcHalfPeriod(drum_frequency_HZ_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
+                print("Speed changed: %u steps/sec\n", drum_frequency_HZ_);
             }
             break;
+        }
             
         case MANAGER_CALL_IDS::THICKNESS_CHANGE_ID:
             if (call.value <= 20 && call.value > 5){
                 wire_thickness_ = call.value;
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
                 print("Thickness changed: %u mm^-2\n", wire_thickness_);
             }
             break;
 
-        case MANAGER_CALL_IDS::THICKNESS_INCREASE_ID:
-            if ((int)call.value > 0 && call.value <= 19){
+        case MANAGER_CALL_IDS::THICKNESS_INCREASE_ID:{
+            int32_t value = *reinterpret_cast<int32_t *>(&call.value);
+
+            if (value > 0 && call.value <= 19){
                 wire_thickness_ += 1;
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
                 print("Thickness changed: %u mm^-2\n", wire_thickness_);
             }
-            else if ((int)call.value < 0 && call.value > 6){
+            else if (value < 0 && call.value > 6){
                 wire_thickness_ -= 1;
-                guide_frequency_ = GuideStepper::calcHalfPeriod(drum_frequency_, wire_thickness_);
+                guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
                 print("Thickness changed: %u mm^-2\n", wire_thickness_);
             }   
             break;
+        }
         
         case MANAGER_CALL_IDS::DIRECTION_DRUM_CHANGE_ID:
             DrumStepper::changeDirection((Stepper::Direction)call.value);
             call.value == Stepper::DIR_FORWARD ? print("Drum direction changed to Forward\n") : print("Drum direction changed to Backward\n");
+            break;
+
+        case MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID:
+            GuideStepper::changeDirection((Stepper::Direction)call.value);
+            call.value == Stepper::DIR_FORWARD ? print("Guide direction changed to Forward\n") : print("Drum direction changed to Backward\n");
             break;
 
         case MANAGER_CALL_IDS::WAVE_PAUSE_ID:
@@ -140,7 +158,9 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
             vTaskSuspend(TASK_HANDLE_stepper_guide_);
             DrumStepper::switchEnable(false);
             GuideStepper::switchEnable(false);
-            print("Waving paused\n");
+            {/* L(mm) = s(steps) * 2(mm/rot) / 400(steps/rot)  */
+            uint32_t mm_left = guide_steps_ * MM_PER_ROTATION / STEPS_PER_ROTATION;
+            print("Waving paused, mm left: %u\n", mm_left);}
             break;
 
         case MANAGER_CALL_IDS::WAVE_STOP_ID:
@@ -148,11 +168,25 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
             vTaskSuspend(TASK_HANDLE_stepper_guide_);
             DrumStepper::switchEnable(false);
             GuideStepper::switchEnable(false);
+            {/* L(mm) = s(steps) * 2(mm/rot) / 400(steps/rot)  */
+            uint32_t mm_left = guide_steps_ * MM_PER_ROTATION / STEPS_PER_ROTATION;
+            print("Waving stopped, mm left: %u\n", mm_left);}
             guide_steps_ = 0;
-            print("Waving stopped\n");
+            break;
+
+        case MANAGER_CALL_IDS::WAVE_CONTINUE_ID:
+            DrumStepper::switchEnable(true);
+            GuideStepper::switchEnable(true);
+            vTaskResume(TASK_HANDLE_stepper_drum_);
+            vTaskResume(TASK_HANDLE_stepper_guide_);
+            {/* L(mm) = s(steps) * 2(mm/rot) / 400(steps/rot)  */
+            uint32_t mm_left = guide_steps_ * MM_PER_ROTATION / STEPS_PER_ROTATION;
+            print("Waving continued, mm left: %u\n", mm_left);}
             break;
     }
 }
+
+/*--------------------------------------------*/
 
 bool GlobalManager::createSelf()
 {
@@ -163,7 +197,7 @@ bool GlobalManager::createSelf()
         return false;
     }
 
-    return xTaskCreate(GlobalManager::vManagerTask, "Manager task", configMINIMAL_STACK_SIZE, &PARAMS_manager_, configMAX_PRIORITIES - 1, &TASK_HANDLE_manager_);
+    return xTaskCreate(GlobalManager::vManagerTask, "Manager task", 1024, &PARAMS_manager_, configMAX_PRIORITIES - 1, &TASK_HANDLE_manager_);
 }
 
 bool GlobalManager::createUART()
@@ -192,9 +226,10 @@ bool GlobalManager::createSteppers()
 {
     wire_thickness_ = 13;
     guide_steps_ = 0;
-    guide_frequency_ = 1;
-    drum_frequency_ = 1;
+    drum_frequency_HZ_ = 10;
+    drum_delay_ticks_ = DrumStepper::calcHalfPeriod(drum_frequency_HZ_);
+    guide_delay_ticks_ = GuideStepper::calcHalfPeriod(drum_delay_ticks_, wire_thickness_);
 
-    return xTaskCreate(DrumStepper::vStepperDrumTask, "Step drum task", configMINIMAL_STACK_SIZE, &PARAMS_stepper_drum_, 3, &TASK_HANDLE_stepper_drum_) &&
-           xTaskCreate(GuideStepper::vStepperGuideTask, "Step guide task", configMINIMAL_STACK_SIZE, &PARAMS_stepper_guide_, 3, &TASK_HANDLE_stepper_guide_);
+    return xTaskCreate(DrumStepper::vStepperDrumTask, "Step drum task", configMINIMAL_STACK_SIZE, &PARAMS_stepper_drum_, 3, &TASK_HANDLE_stepper_drum_) && 
+    xTaskCreate(GuideStepper::vStepperGuideTask, "Step guide task", configMINIMAL_STACK_SIZE, &PARAMS_stepper_guide_, 3, &TASK_HANDLE_stepper_guide_);
 }

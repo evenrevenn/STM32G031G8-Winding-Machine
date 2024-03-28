@@ -25,14 +25,14 @@ inline void Encoder::leftTurnHandler()
     MANAGER_ACCESS access = GlobalManager::getInstance().getManagerAccess();
     MANAGER_CALL call;
 
-    if (GPIOB->ODR & GPIO_ODR_ODR1)
+    if (GPIOB->IDR & GPIO_IDR_IDR1)
     {
-        call.id = MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID;
-        call.value = Stepper::DIR_FORWARD;
-    }
-    else{
         call.id = MANAGER_CALL_IDS::SPEED_INCREASE_ID;
         call.value = 1;
+    }
+    else{
+        call.id = MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID;
+        call.value = Stepper::DIR_FORWARD;
     }
 
     access.sendCallFromISR(call);
@@ -43,14 +43,14 @@ inline void Encoder::rightTurnHandler()
     MANAGER_ACCESS access = GlobalManager::getInstance().getManagerAccess();
     MANAGER_CALL call;
 
-    if (GPIOB->ODR & GPIO_ODR_ODR1)
+    if (GPIOB->IDR & GPIO_IDR_IDR1)
     {
-        call.id = MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID;
-        call.value = Stepper::DIR_BACKWARD;
-    }
-    else{
         call.id = MANAGER_CALL_IDS::SPEED_INCREASE_ID;
         call.value = -1;
+    }
+    else{
+        call.id = MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID;
+        call.value = Stepper::DIR_BACKWARD;
     }
 
     access.sendCallFromISR(call);

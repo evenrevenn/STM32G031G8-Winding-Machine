@@ -34,6 +34,8 @@ private:
 
     CircularBuffer buffer_;
     char vsprintf_buffer_[printBufferSize];
+
+    bool msg_buffered_;
 };
 
 #endif //UART_HANDLER

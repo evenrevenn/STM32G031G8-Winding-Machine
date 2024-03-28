@@ -38,7 +38,7 @@ CircularFreeSpace CircularBuffer::getFreeSpace() const
 
 CircularOccupiedSpace CircularBuffer::getOccupiedSpace() const
 {
-    CircularFreeSpace occupied;
+    CircularOccupiedSpace occupied;
     
     occupied.right = write_pos_ > read_pos_ ? write_pos_ - read_pos_ - 1 : buffer_end_ - read_pos_;
     occupied.left = write_pos_ > read_pos_ ? 0 : write_pos_ - buffer_start_;
@@ -51,7 +51,7 @@ size_t CircularBuffer::readOne(uint8_t *destination)
 {
     if(read_pos_ != buffer_end_)
     {
-        if (read_pos_ + 1 < write_pos_){
+        if (read_pos_ + 1 < write_pos_ || read_pos_ > write_pos_){
             read_pos_++;
             *destination = *read_pos_;
             return 1;

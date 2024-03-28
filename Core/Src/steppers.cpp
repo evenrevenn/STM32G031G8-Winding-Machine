@@ -1,4 +1,5 @@
 #include "steppers.h"
+#include "UART_handler.h"
 
 /*-------------------------------------------------------*/
 /* STEPPER BASE */
@@ -29,7 +30,7 @@ Stepper(steps, half_period, call_access)
 
 TickType_t DrumStepper::calcHalfPeriod(const uint32_t frequency_Hz)
 {
-    /* 4000 (Hz) / x (Hz) / 2 */
+    /* 10000 (Hz) / x (Hz) / 2 */
     return configTICK_RATE_HZ / frequency_Hz / 2;
 }
 
@@ -46,18 +47,20 @@ void DrumStepper::switchEnable(bool enabled)
 void DrumStepper::vStepperDrumTask(void *pvParameters)
 {
     task_params::PARAMS_stepper_t stepper_params = *static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
-    GuideStepper guide_stepper(stepper_params.steps, stepper_params.frequency, stepper_params.call_access);
+    DrumStepper drum_stepper(stepper_params.steps, stepper_params.frequency, stepper_params.call_access);
+
+    // print("Drum task started\n");
 
     while(true)
     {
-        guide_stepper.callbackGuide();
+        drum_stepper.callbackDrum();
     }
 }
 
 void DrumStepper::callbackDrum()
 {
     GPIOA->ODR ^= GPIO_ODR_ODR4;
-    vTaskDelay(pdMS_TO_TICKS(half_period_));
+    vTaskDelay(half_period_);
 }
 
 /*-------------------------------------------------------*/
@@ -101,6 +104,8 @@ void GuideStepper::vStepperGuideTask(void *pvParameters)
     task_params::PARAMS_stepper_t stepper_params = *static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
     GuideStepper guide_stepper(stepper_params.steps, stepper_params.frequency, stepper_params.call_access);
 
+    // print("Guide task started\n");
+
     while(true)
     {
         guide_stepper.callbackGuide();
@@ -116,9 +121,9 @@ void GuideStepper::callbackGuide()
         return;
     }
 
-    GPIOA->ODR |= GPIO_ODR_ODR4;
-    vTaskDelay(pdMS_TO_TICKS(half_period_));
-    GPIOA->ODR &= ~(GPIO_ODR_ODR4);
+    GPIOA->ODR |= GPIO_ODR_ODR7;
+    vTaskDelay(half_period_);
+    GPIOA->ODR &= ~(GPIO_ODR_ODR7);
     steps_--;
-    vTaskDelay(pdMS_TO_TICKS(half_period_));
+    vTaskDelay(half_period_);
 }

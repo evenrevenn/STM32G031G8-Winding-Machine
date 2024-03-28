@@ -85,6 +85,10 @@ bool AsciiDecoder::parseCommand(const char *ascii_command)
         call_struct_.id = MANAGER_CALL_IDS::WAVE_STOP_ID;
         return true;
     }
+    else if (!strcmp(ascii_command, "ContinueWaving")){
+        call_struct_.id = MANAGER_CALL_IDS::WAVE_CONTINUE_ID;
+        return true;
+    }
 
     return false;
 }
