@@ -108,7 +108,7 @@ static void prvSetupHardware(void)
 	RCC->CR |= RCC_CR_HSION;
 
 	/* Reset SW[1:0], HPRE[3:0], PPRE1[2:0], PPRE2[2:0], ADCPRE[1:0] and MCO[2:0] bits */
-	RCC->CFGR &= (uint32_t)0xF8FF0000;
+	RCC->CFGR &= (uint32_t)0xFFFF0000;
 
 	/* Reset HSEON, CSSON and PLLON bits */
 	RCC->CR &= ~(RCC_CR_HSEON | RCC_CR_CSSON | RCC_CR_PLLON);
@@ -116,47 +116,24 @@ static void prvSetupHardware(void)
 	/* Reset HSEBYP bit */
 	RCC->CR &= ~(RCC_CR_HSEBYP);
 
-	/* Reset PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE bits */
-	RCC->CFGR &= (uint32_t)0xFF80FFFF;
+	RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLQEN | RCC_PLLCFGR_PLLPEN);
 
 	/* Disable all interrupts */
-	RCC->CIR = 0x00000000;
-
-	/* Enable HSE. */
-	RCC->CR |= RCC_CR_HSEON;
-
-	/* Wait till HSE is ready. */
-	while (!(RCC->CR & RCC_CR_HSERDY));
+	RCC->CIER = 0x00000000;
 
 	/* HCLK = SYSCLK. */
 	/* Clear HPRE[3:0] bits */
 	RCC->CFGR &= ~(RCC_CFGR_HPRE);
 
-	/* PCLK2  = HCLK. */
-	RCC->CFGR &= ~(RCC_CFGR_PPRE2);
+	/* Clear PPRE[3:0] bits */
+	RCC->CFGR &= ~(RCC_CFGR_PPRE);
 
-	/* PCLK1  = HCLK/2. */
-	RCC->CFGR &= ~(RCC_CFGR_PPRE1);
-
-	/* Set PPRE1[2:0] bits according to RCC_HCLK value */
-	RCC->CFGR |= RCC_CFGR_PPRE1_DIV2;
-
-	/* ADCCLK = PCLK2/4. */
-	/* Clear ADCPRE[1:0] bits */
-	RCC->CFGR &= ~(RCC_CFGR_ADCPRE);
-
-	/* Set ADCPRE[1:0] bits according to RCC_PCLK2 value */
-	RCC->CFGR |= RCC_CFGR_ADCPRE_DIV4;
-
-	/* Flash 2 wait state. */
-	*(volatile unsigned long *)0x40022000 = 0x01;
-
-	/* PLLCLK = 8MHz * 9 = 72 MHz */
+	/* PLLCLK = 16MHz * 8 / 2 = 64 MHz */
 	/* Clear PLLSRC, PLLXTPRE and PLLMUL[3:0] bits */
-	RCC->CFGR &= ~(RCC_CFGR_PLLSRC | RCC_CFGR_PLLXTPRE | RCC_CFGR_PLLMULL);
+	RCC->PLLCFGR &= ~(RCC_PLLCFGR_PLLSRC | RCC_PLLCFGR_PLLM | RCC_PLLCFGR_PLLN);
 
 	/* Set the PLL configuration bits */
-	RCC->CFGR |= RCC_CFGR_PLLSRC | RCC_CFGR_PLLMULL9;
+	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLSRC_1 | RCC_PLLCFGR_PLLN_3 |  RCC_PLLCFGR_PLLR_0 | RCC_PLLCFGR_PLLREN);
 
 	/* Enable PLL. */
 	RCC->CR |= RCC_CR_PLLON;
@@ -166,24 +143,21 @@ static void prvSetupHardware(void)
 
 	/* Select PLL as system clock source. */
 	/* Clear SW[1:0] bits */
-	RCC->CFGR &= RCC_CFGR_SW;
+	RCC->CFGR &= ~(RCC_CFGR_SW);
 
 	/* Set SW[1:0] bits according to RCC_SYSCLKSource value */
-	RCC->CFGR |= RCC_CFGR_SW_PLL;
+	RCC->CFGR |= RCC_CFGR_SW_1;
 
 	/* Wait till PLL is used as system clock source. */
-	while ((RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_PLL);
+	while ((RCC->CFGR & RCC_CFGR_SWS_Msk) != RCC_CFGR_SWS_PLLRCLK);
 
-	/* Enable GPIOA, GPIOB, GPIOC, GPIOD, GPIOE and AFIO clocks */
-	RCC->APB2ENR |= (RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN | RCC_APB2ENR_IOPDEN | RCC_APB2ENR_IOPEEN | RCC_APB2ENR_AFIOEN);
+	// /* Set the Vector Table base address at 0x08000000. */
+	// SCB->VTOR = FLASH_BASE;
 
-	/* Set the Vector Table base address at 0x08000000. */
-	SCB->VTOR = FLASH_BASE;
+	// SCB->AIRCR = (uint32_t)0x05FA0000 | (uint32_t)0x300;
 
-	SCB->AIRCR = (uint32_t)0x05FA0000 | (uint32_t)0x300;
-
-	/* Configure HCLK clock as SysTick clock source. */
-	SysTick->CTRL |= (uint32_t)0x00000004;
+	// /* Configure HCLK clock as SysTick clock source. */
+	// SysTick->CTRL |= (uint32_t)0x00000004;
 }
 
 /*-----------------------------------------------------------*/
