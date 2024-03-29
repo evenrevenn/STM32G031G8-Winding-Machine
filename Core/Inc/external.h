@@ -25,7 +25,7 @@ inline void Encoder::leftTurnHandler()
     MANAGER_ACCESS access = GlobalManager::getInstance().getManagerAccess();
     MANAGER_CALL call;
 
-    if (GPIOB->IDR & GPIO_IDR_IDR1)
+    if (GPIOB->IDR & GPIO_IDR_ID1)
     {
         call.id = MANAGER_CALL_IDS::SPEED_INCREASE_ID;
         call.value = 1;
@@ -43,7 +43,7 @@ inline void Encoder::rightTurnHandler()
     MANAGER_ACCESS access = GlobalManager::getInstance().getManagerAccess();
     MANAGER_CALL call;
 
-    if (GPIOB->IDR & GPIO_IDR_IDR1)
+    if (GPIOB->IDR & GPIO_IDR_ID1)
     {
         call.id = MANAGER_CALL_IDS::SPEED_INCREASE_ID;
         call.value = -1;

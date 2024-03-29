@@ -1,102 +1,91 @@
 #include "external.h"
-#include "stm32f1xx.h"
+#include "stm32g0xx.h"
 
 #include "global_manager.h"
 
 void Encoder::initEncoder()
 {
     /* TURN PINS */
-	GPIOB->CRL &= ~(GPIO_CRL_CNF3_1);
-	GPIOB->CRL |= GPIO_CRL_CNF3_0;
-	GPIOB->CRL &= ~(GPIO_CRL_MODE3);
+	GPIOB->MODER &= ~(GPIO_MODER_MODE3);
+	GPIOB->OTYPER |= GPIO_OTYPER_OT3;
 
-    GPIOA->CRH &= ~(GPIO_CRH_CNF8_1);
-	GPIOA->CRH |= GPIO_CRH_CNF8_0;
-	GPIOA->CRH &= ~(GPIO_CRH_MODE8);
+	GPIOA->MODER &= ~(GPIO_MODER_MODE8);
+	GPIOA->OTYPER |= GPIO_OTYPER_OT8;
 
-	AFIO->EXTICR[0] |= AFIO_EXTICR1_EXTI3_PB;
+	EXTI->EXTICR[0] |= EXTI_EXTICR1_EXTI3_0;
 
-	EXTI->IMR |=  EXTI_IMR_MR3;
-	EXTI->FTSR |= EXTI_FTSR_FT3;
+	EXTI->FTSR1 |= EXTI_FTSR1_FT3;
 
-	NVIC_EnableIRQ(EXTI3_IRQn);
+	NVIC_EnableIRQ(EXTI2_3_IRQn);
 
 	/* TODO: CHANGE PINOUT TO ADD BUTTON INTERRUPT */
-	GPIOB->CRL &= ~(GPIO_CRL_CNF0_1);
-	GPIOB->CRL |= GPIO_CRL_CNF0_0;
-	GPIOB->CRL &= ~(GPIO_CRL_MODE0);
+	GPIOB->MODER &= ~(GPIO_MODER_MODE0);
+	GPIOB->OTYPER |= GPIO_OTYPER_OT0;
 }
 
 void MicroSwitches::microswitchesSetup()
 {
 	/* LEFT MICROSWITCHES */
-	GPIOA->CRL &= ~(GPIO_CRL_CNF0_1 | GPIO_CRL_CNF1_1);
-	GPIOA->CRL |= GPIO_CRL_CNF0_0 | GPIO_CRL_CNF1_0;
-	GPIOA->CRL &= ~(GPIO_CRL_MODE0 | GPIO_CRL_MODE1);
+	GPIOA->MODER &= ~(GPIO_MODER_MODE1);
+	GPIOA->OTYPER |= GPIO_OTYPER_OT1;
 
-	AFIO->EXTICR[0] |= AFIO_EXTICR1_EXTI0_PA | AFIO_EXTICR1_EXTI1_PA;
+	EXTI->EXTICR[0] &= ~(EXTI_EXTICR1_EXTI0 | EXTI_EXTICR1_EXTI1);
 
-	EXTI->IMR |=  EXTI_IMR_MR0 | EXTI_IMR_MR1;
-	EXTI->FTSR |= EXTI_FTSR_FT0 | EXTI_FTSR_FT1;
+	EXTI->FTSR1 |= EXTI_FTSR1_FT0 | EXTI_FTSR1_FT1;
 
-	NVIC_EnableIRQ(EXTI0_IRQn);
-	NVIC_EnableIRQ(EXTI1_IRQn);
+	NVIC_EnableIRQ(EXTI0_1_IRQn);
 
 	/* RIGHT MICROSWITCHES */
-	GPIOB->CRL &= ~(GPIO_CRL_CNF4_1 | GPIO_CRL_CNF5_1);
-	GPIOB->CRL |= GPIO_CRL_CNF4_0 | GPIO_CRL_CNF5_0;
-	GPIOB->CRL &= ~(GPIO_CRL_MODE4 | GPIO_CRL_MODE5);
+	GPIOB->MODER &= ~(GPIO_MODER_MODE5);
+	GPIOB->OTYPER |= GPIO_OTYPER_OT5;
 
-	AFIO->EXTICR[1] |= AFIO_EXTICR2_EXTI4_PB | AFIO_EXTICR2_EXTI5_PB;
+	EXTI->EXTICR[1] |= EXTI_EXTICR2_EXTI4_0 | EXTI_EXTICR2_EXTI5_0;
 
-	EXTI->IMR |=  EXTI_IMR_MR4 | EXTI_IMR_MR5;
-	EXTI->FTSR |= EXTI_FTSR_FT4 | EXTI_FTSR_FT5;
+	EXTI->FTSR1 |= EXTI_FTSR1_FT4 | EXTI_FTSR1_FT5;
 
-	NVIC_EnableIRQ(EXTI4_IRQn);
-	NVIC_EnableIRQ(EXTI9_5_IRQn);
+	NVIC_EnableIRQ(EXTI4_15_IRQn);
 }
 
 extern "C"
 {
 
 /* Encoder pins handler */
-void EXTI3_IRQHandler()
+void EXTI2_3_IRQHandler()
 {
-	GPIOA->IDR & GPIO_IDR_IDR8 ? Encoder::leftTurnHandler() : Encoder::rightTurnHandler();
+	GPIOA->IDR & GPIO_IDR_ID8 ? Encoder::leftTurnHandler() : Encoder::rightTurnHandler();
 
-	EXTI->PR |= EXTI_PR_PR3;
+	EXTI->FPR1 |= EXTI_FPR1_FPIF3;
 }
 
 
 /* Left MicroSwitches handlers */
-void EXTI0_IRQHandler()
+void EXTI0_1_IRQHandler()
 {
-	MicroSwitches::leftMicroSwitchHandler();	
-
-	EXTI->PR |= EXTI_PR_PR0;
+	if (EXTI->FPR1 & EXTI_FPR1_FPIF0){
+		MicroSwitches::leftMicroSwitchHandler();	
+		
+		EXTI->FPR1 |= EXTI_FPR1_FPIF0;
+	}
+	if (EXTI->FPR1 & EXTI_FPR1_FPIF1){
+		MicroSwitches::leftMicroSwitchHandler();	
+		
+		EXTI->FPR1 |= EXTI_FPR1_FPIF1;
+	}
 }
-
-void EXTI1_IRQHandler()
-{
-	MicroSwitches::leftMicroSwitchHandler();
-
-	EXTI->PR |= EXTI_PR_PR1;
-}
-
 
 /* Right MicroSwitches handlers */
-void EXTI4_IRQHandler()
+void EXTI4_15_IRQHandler()
 {
-	MicroSwitches::rightMicroSwitchHandler();	
-
-	EXTI->PR |= EXTI_PR_PR4;
-}
-
-void EXTI9_5_IRQHandler()
-{
-	MicroSwitches::rightMicroSwitchHandler();
-
-	EXTI->PR |= EXTI_PR_PR5;
+	if (EXTI->FPR1 & EXTI_FPR1_FPIF4){
+		MicroSwitches::rightMicroSwitchHandler();
+		
+		EXTI->FPR1 |= EXTI_FPR1_FPIF4;
+	}
+	if (EXTI->FPR1 & EXTI_FPR1_FPIF5){
+		MicroSwitches::rightMicroSwitchHandler();
+		
+		EXTI->FPR1 |= EXTI_FPR1_FPIF5;
+	}
 }
 
 }
