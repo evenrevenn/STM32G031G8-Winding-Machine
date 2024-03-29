@@ -39,20 +39,20 @@
  * See http://www.freertos.org/a00110.html
  *----------------------------------------------------------*/
 
-#define vPortSVCHandler SVC_Handler
-#define xPortPendSVHandler PendSV_Handler
-#define xPortSysTickHandler SysTick_Handler
+// #define vPortSVCHandler SVC_Handler
+// #define xPortPendSVHandler PendSV_Handler
+// #define xPortSysTickHandler SysTick_Handler
 
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 72000000 )
+#define configCPU_CLOCK_HZ			( ( unsigned long ) 64000000 )
 #define configTICK_RATE_HZ			( ( TickType_t ) 10000 )
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 120 )
-#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 16 * 1024 ) )
+#define configTOTAL_HEAP_SIZE		( ( size_t ) ( 7 * 1024 ) )
 #define configMAX_TASK_NAME_LEN		( 16 )
 #define configUSE_TRACE_FACILITY	1
 #define configUSE_16_BIT_TICKS		0
@@ -83,7 +83,7 @@ to exclude the API function. */
 #define configKERNEL_INTERRUPT_PRIORITY 		255
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
 See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
-#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	176 /* equivalent to 0xb0, or priority 11. */
+#define configMAX_SYSCALL_INTERRUPT_PRIORITY 	192 /* equivalent to 0xc0, or priority 3. */
 
 
 /* This is the value being used as per the ST library which permits 16
