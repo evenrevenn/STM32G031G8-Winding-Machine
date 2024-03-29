@@ -69,9 +69,10 @@ int main(void)
 	/* Set up the clocks and memory interface. */
 	prvSetupHardware();
 
-	RCC->APB2ENR |= RCC_APB2ENR_IOPCEN;
-	GPIOC->CRH &= ~(GPIO_CRH_CNF13);
-	GPIOC->CRH |= GPIO_CRH_MODE13;
+	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
+
+	GPIOC->MODER &= ~(GPIO_MODER_MODE2_1);
+	GPIOC->MODER |= GPIO_MODER_MODE2_0;
 
 	xTaskCreate(prvBlinkingTask, "Blinking", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 	
@@ -96,7 +97,7 @@ void prvBlinkingTask(void *pvParameters)
 	const TickType_t xDelay = pdMS_TO_TICKS(500);
 	for (;;)
 	{
-		GPIOC->ODR ^= GPIO_ODR_ODR13;
+		GPIOC->ODR ^= GPIO_ODR_OD2;
 		vTaskDelay(xDelay);
 	}
 }
