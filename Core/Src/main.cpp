@@ -192,19 +192,19 @@ void USART1_IRQHandler(void)
     char uart_buff = 0;
     GlobalManager &manager = GlobalManager::getInstance();
 
-	if (USART1->SR & USART_SR_TXE)
+	if (USART1->ISR & USART_ISR_TXE_TXFNF)
 	{
 
 		if (xQueueReceiveFromISR(manager.getUARTTransmitQueue(), &uart_buff, NULL) == pdTRUE){
-			USART1->DR = uart_buff;
+			USART1->TDR = uart_buff;
 		}
 		else{
-			USART1->CR1 &= ~(USART_CR1_TXEIE);
+			USART1->CR1 &= ~(USART_CR1_TXEIE_TXFNFIE);
 		}
 	}
-	if (USART1->SR & USART_SR_RXNE)
+	if (USART1->ISR & USART_ISR_RXNE_RXFNE)
 	{
-		uart_buff = USART1->DR;
+		uart_buff = USART1->RDR;
 		xQueueSendFromISR(manager.getUARTReceiveQueue(), &uart_buff, NULL);
 	}
 }

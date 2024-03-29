@@ -15,20 +15,21 @@ msg_buffered_(false)
 
 void UARTHandler::initUSART()
 {
-	RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
-	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
+	RCC->IOPENR |= RCC_IOPENR_GPIOBEN;
+	RCC->APBENR2 |= RCC_APBENR2_USART1EN;
 
 	// Configuring UART1 Pins
-	GPIOA->CRH |= GPIO_CRH_CNF9_1;
-	GPIOA->CRH &= ~(GPIO_CRH_CNF9_0);
+	GPIOB->MODER &= ~(GPIO_MODER_MODE9_0);
+	GPIOB->MODER |= GPIO_MODER_MODE9_1;
 
-	GPIOA->CRH |= GPIO_CRH_MODE9_Msk;
+	GPIOB->OTYPER |= GPIO_OTYPER_OT9;
+	GPIOB->AFR[1] |= GPIO_AFRH_AFSEL9_0;
 
 
-	GPIOA->CRH &= ~(GPIO_CRH_CNF10_1);
-	GPIOA->CRH |= GPIO_CRH_CNF10_0;
+	GPIOB->MODER &= ~(GPIO_MODER_MODE10_0);
+	GPIOB->MODER |= GPIO_MODER_MODE10_1;
 
-	GPIOA->CRH &= ~(GPIO_CRH_MODE10_Msk);
+	GPIOB->AFR[1] |= GPIO_AFRH_AFSEL10_0;
 
 
 	// Configuring UART
@@ -37,9 +38,9 @@ void UARTHandler::initUSART()
 	USART1->CR1 |= USART_CR1_RE;
 
 	USART1->CR1 &= ~(USART_CR1_M);
-	USART1->BRR = 625UL;
+	USART1->BRR = 555UL;
 
-	USART1->CR1 |= USART_CR1_RXNEIE;
+	USART1->CR1 |= USART_CR1_RXNEIE_RXFNEIE;
 
 	NVIC_EnableIRQ(USART1_IRQn);
 }
@@ -59,7 +60,7 @@ UARTHandler &UARTHandler::getInstance()
 
 UARTHandler::~UARTHandler()
 {
-    RCC->APB2ENR &= ~(RCC_APB2ENR_USART1EN);
+    RCC->APBENR2 &= ~(RCC_APBENR2_USART1EN);
     USART1->CR1 &= ~(USART_CR1_UE);
 	USART1->CR1 &= ~(USART_CR1_TE);
 	USART1->CR1 &= ~(USART_CR1_RE);
@@ -92,7 +93,7 @@ void UARTHandler::writeToQueue(const QueueHandle_t &queue)
 	else{
 		if (msg_buffered_){
 			msg_buffered_ = false;
-			USART1->CR1 |= USART_CR1_TXEIE;
+			USART1->CR1 |= USART_CR1_TXEIE_TXFNFIE;
 		}
 		else{
 			vTaskDelay(pdMS_TO_TICKS(10));
