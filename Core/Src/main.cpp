@@ -46,7 +46,7 @@ extern "C"{
 }
 #endif
 
-#include "stm32f1xx.h"
+#include "stm32g0xx.h"
 
 #include "UART_handler.h"
 #include "global_manager.h"

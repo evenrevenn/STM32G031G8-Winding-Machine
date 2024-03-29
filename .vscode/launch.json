@@ -7,11 +7,11 @@
 			"request": "launch",
 			"cwd": "${workspaceRoot}",
 			"servertype": "openocd",
-			"executable": "./build/RTOS_example.elf",
-			"svdFile": "STM32F103.svd",
+			"executable": "./build/Winding_Machine.elf",
+			"svdFile": "STM32G031.svd",
 			"configFiles": [
 				"interface/stlink.cfg",
-				"target/stm32f1x.cfg"
+				"target/stm32g0x.cfg"
 			],
 			"preLaunchTask": "Build"
 		}

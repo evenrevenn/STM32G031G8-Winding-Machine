@@ -3,7 +3,7 @@
 
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "stm32f1xx.h"
+#include "stm32g0xx.h"
 #include "semphr.h"
 
 // #include "stepper.h"

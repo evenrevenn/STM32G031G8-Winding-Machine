@@ -13,7 +13,7 @@
 ######################################
 # target
 ######################################
-TARGET = RTOS_example
+TARGET = Winding_Machine
 
 
 ######################################
@@ -67,7 +67,7 @@ Core/Src/external.cpp
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f103xb.s
+startup_stm32g031xx.s
 
 
 #######################################
@@ -96,7 +96,7 @@ BIN = $(CP) -O binary -S
 # CFLAGS
 #######################################
 # cpu
-CPU = -mcpu=cortex-m3
+CPU = -mcpu=cortex-m0plus
 
 # fpu
 # NONE for Cortex-M0/M0+/M3
@@ -113,7 +113,7 @@ AS_DEFS =
 
 # C defines
 C_DEFS =  \
--DSTM32F103xB
+-DSTM32G031xx
 
 
 # AS includes
@@ -122,17 +122,15 @@ AS_INCLUDES =
 # C includes
 C_INCLUDES =  \
 -ICore/Inc \
--IDrivers/CMSIS/Device/ST/STM32F1xx/Include \
+-IDrivers/CMSIS/Device/ST/STM32G0xx/Include \
 -IDrivers/CMSIS/Include \
 -IDrivers/CMSIS/Core/Include \
 -IFreeRTOS_core/include \
 -IFreeRTOS_core
-# -IDrivers/ST_Library/inc \
 
 # CPP includes
 CXX_INCLUDES =  \
 $(C_INCLUDES) 
-# "c:/program files (x86)/gnu arm embedded toolchain/10 2021.10/arm-none-eabi/include"
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT_C) -Wall -fdata-sections -ffunction-sections
@@ -159,19 +157,18 @@ CXXFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F103C8Tx_FLASH.ld
+LDSCRIPT = STM32G031G8Ux_FLASH.ld
 
 # libraries
 LIBS = -lc_nano -lstdc++_nano -lm -lnosys
 LIBDIR = 
 LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
-# LDFLAGS = $(MCU) -specs=nosys.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
 
 prog: $(BUILD_DIR)/$(TARGET).elf
-	openocd -f interface/stlink.cfg -f target/stm32f1x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify exit reset"
+	openocd -f interface/stlink.cfg -f target/stm32g0x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify exit reset"
 
 #######################################
 # build the application
