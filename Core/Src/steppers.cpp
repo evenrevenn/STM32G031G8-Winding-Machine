@@ -17,12 +17,10 @@ half_period_(half_period)
 DrumStepper::DrumStepper(uint32_t &steps, uint32_t &half_period, MANAGER_ACCESS call_access):
 Stepper(steps, half_period, call_access)
 {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPAEN;
+    RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
 
-    GPIOA->CRL &= ~(GPIO_CRL_CNF3 | GPIO_CRL_CNF4 | GPIO_CRL_CNF5);
-
-    GPIOA->CRL &= ~(GPIO_CRL_MODE3_0 | GPIO_CRL_MODE4_0 | GPIO_CRL_MODE5_0);
-    GPIOA->CRL |= GPIO_CRL_MODE3_1 | GPIO_CRL_MODE4_1 | GPIO_CRL_MODE5_1;
+    GPIOA->MODER &= ~(GPIO_MODER_MODE3_1 | GPIO_MODER_MODE4_1 | GPIO_MODER_MODE5_1);
+    GPIOA->MODER |= GPIO_MODER_MODE3_0 | GPIO_MODER_MODE4_0 | GPIO_MODER_MODE5_0;
 
     changeDirection(DIR_FORWARD);
     switchEnable(false);
@@ -36,12 +34,12 @@ TickType_t DrumStepper::calcHalfPeriod(const uint32_t frequency_Hz)
 
 void DrumStepper::changeDirection(Direction direction)
 {
-    direction == DIR_FORWARD ? GPIOA->ODR |= GPIO_ODR_ODR3 : GPIOA->ODR &= ~(GPIO_ODR_ODR3);
+    direction == DIR_FORWARD ? GPIOA->ODR |= GPIO_ODR_OD3 : GPIOA->ODR &= ~(GPIO_ODR_OD3);
 }
 
 void DrumStepper::switchEnable(bool enabled)
 {
-    enabled ? GPIOA->ODR &= ~(GPIO_ODR_ODR5) : GPIOA->ODR |= GPIO_ODR_ODR5;
+    enabled ? GPIOA->ODR &= ~(GPIO_ODR_OD5) : GPIOA->ODR |= GPIO_ODR_OD5;
 }
 
 void DrumStepper::vStepperDrumTask(void *pvParameters)
@@ -59,7 +57,7 @@ void DrumStepper::vStepperDrumTask(void *pvParameters)
 
 void DrumStepper::callbackDrum()
 {
-    GPIOA->ODR ^= GPIO_ODR_ODR4;
+    GPIOA->ODR ^= GPIO_ODR_OD4;
     vTaskDelay(half_period_);
 }
 
@@ -69,15 +67,13 @@ void DrumStepper::callbackDrum()
 GuideStepper::GuideStepper(uint32_t &steps, uint32_t &half_period, MANAGER_ACCESS call_access):
 Stepper(steps, half_period, call_access)
 {
-    RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+    RCC->IOPENR |= RCC_IOPENR_GPIOBEN;
 
-    GPIOA->CRL &= ~(GPIO_CRL_CNF6 | GPIO_CRL_CNF7);
+    GPIOA->MODER &= ~(GPIO_MODER_MODE6_1 | GPIO_MODER_MODE7_1);
+    GPIOA->MODER |= GPIO_MODER_MODE6_0 | GPIO_MODER_MODE7_0;
 
-    GPIOA->CRL &= ~(GPIO_CRL_MODE6_0 | GPIO_CRL_MODE7_0);
-    GPIOA->CRL |= GPIO_CRL_MODE6_1 | GPIO_CRL_MODE7_1;
-
-    GPIOB->CRL &= ~(GPIO_CRL_MODE0_0);
-    GPIOB->CRL |= GPIO_CRL_MODE0_1;
+    GPIOB->MODER &= ~(GPIO_MODER_MODE0_1);
+    GPIOB->MODER |= GPIO_MODER_MODE0_0;
 
     changeDirection(DIR_FORWARD);
     switchEnable(false);
@@ -91,12 +87,12 @@ TickType_t GuideStepper::calcHalfPeriod(const TickType_t drum_half_period, const
 
 void GuideStepper::changeDirection(Direction direction)
 {
-    direction == DIR_FORWARD ? GPIOA->ODR |= GPIO_ODR_ODR6 : GPIOA->ODR &= ~(GPIO_ODR_ODR6);
+    direction == DIR_FORWARD ? GPIOA->ODR |= GPIO_ODR_OD6 : GPIOA->ODR &= ~(GPIO_ODR_OD6);
 }
 
 void GuideStepper::switchEnable(bool enabled)
 {
-    enabled ? GPIOB->ODR &= ~(GPIO_ODR_ODR0) : GPIOB->ODR |= GPIO_ODR_ODR0;
+    enabled ? GPIOB->ODR &= ~(GPIO_ODR_OD0) : GPIOB->ODR |= GPIO_ODR_OD0;
 }
 
 void GuideStepper::vStepperGuideTask(void *pvParameters)
@@ -121,9 +117,9 @@ void GuideStepper::callbackGuide()
         return;
     }
 
-    GPIOA->ODR |= GPIO_ODR_ODR7;
+    GPIOA->ODR |= GPIO_ODR_OD7;
     vTaskDelay(half_period_);
-    GPIOA->ODR &= ~(GPIO_ODR_ODR7);
+    GPIOA->ODR &= ~(GPIO_ODR_OD7);
     steps_--;
     vTaskDelay(half_period_);
 }
