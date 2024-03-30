@@ -143,6 +143,9 @@ static void prvSetupHardware(void)
 	while (!(RCC->CR & RCC_CR_PLLRDY));
 
 	/* Select PLL as system clock source. */
+	/* Add flash latency */
+	FLASH->ACR |= FLASH_ACR_LATENCY_1;
+
 	/* Clear SW[1:0] bits */
 	RCC->CFGR &= ~(RCC_CFGR_SW);
 

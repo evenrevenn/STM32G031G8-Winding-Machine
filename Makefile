@@ -45,15 +45,6 @@ FreeRTOS_core/port.c \
 FreeRTOS_core/queue.c \
 FreeRTOS_core/tasks.c \
 FreeRTOS_core/timers.c
-# Drivers/ST_Library/src/stm32f10x_can.c \
-# Drivers/ST_Library/src/stm32f10x_gpio.c \
-# Drivers/ST_Library/src/stm32f10x_i2c.c \
-# Drivers/ST_Library/src/stm32f10x_lib.c \
-# Drivers/ST_Library/src/stm32f10x_nvic.c \
-# Drivers/ST_Library/src/stm32f10x_rcc.c \
-# Drivers/ST_Library/src/stm32f10x_spi.c \
-# Drivers/ST_Library/src/stm32f10x_systick.c \
-# Drivers/ST_Library/src/stm32f10x_usart.c \
 
 # CPP sources
 CXX_SOURCES =  \
