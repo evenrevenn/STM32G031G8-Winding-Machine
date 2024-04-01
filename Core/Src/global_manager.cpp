@@ -41,7 +41,7 @@ void GlobalManager::vManagerTask(void *pvParameters)
 }
 
 bool GlobalManager::createTasks()
-{    
+{
     if (!createSelf()){
         return false;
     }
@@ -190,36 +190,36 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
 
 bool GlobalManager::createSelf()
 {
-    manager_calls_queue_ = xQueueCreate(16, sizeof(MANAGER_CALL));
-    manager_calls_semaphhore_ = xSemaphoreCreateCounting(16, 0);
+    manager_calls_queue_ = xQueueCreate(8, sizeof(MANAGER_CALL));
+    manager_calls_semaphhore_ = xSemaphoreCreateCounting(8, 0);
 
     if (!manager_calls_queue_ || !manager_calls_semaphhore_){
         return false;
     }
 
-    return xTaskCreate(GlobalManager::vManagerTask, "Manager task", 1024, &PARAMS_manager_, configMAX_PRIORITIES - 1, &TASK_HANDLE_manager_);
+    return xTaskCreate(GlobalManager::vManagerTask, "Manager task", 512, &PARAMS_manager_, configMAX_PRIORITIES - 1, &TASK_HANDLE_manager_);
 }
 
 bool GlobalManager::createUART()
 {
-	UART_transmit_queue_ = xQueueCreate(512, sizeof(char));
+	UART_transmit_queue_ = xQueueCreate(256, sizeof(char));
 
     if (!UART_transmit_queue_){
         return false;
     }
 
-    return xTaskCreate(UARTHandler::vUARTTask, "UART task", configMINIMAL_STACK_SIZE, &PARAMS_uart_, 2, &TASK_HANDLE_uart_);
+    return xTaskCreate(UARTHandler::vUARTTask, "UART task", 80, &PARAMS_uart_, 2, &TASK_HANDLE_uart_);
 }
 
 bool GlobalManager::createDecoder()
 {
-    UART_receive_queue_ = xQueueCreate(128, sizeof(char));
+    UART_receive_queue_ = xQueueCreate(64, sizeof(char));
 
     if (!UART_receive_queue_){
         return false;
     }
 
-    return xTaskCreate(AsciiDecoder::vDecoderTask, "Decoder task", configMINIMAL_STACK_SIZE, &PARAMS_decoder_, 2, &TASK_HANDLE_uart_);
+    return xTaskCreate(AsciiDecoder::vDecoderTask, "Decoder task", 100, &PARAMS_decoder_, 2, &TASK_HANDLE_uart_);
 }
 
 bool GlobalManager::createSteppers()

@@ -6,7 +6,7 @@
 #include "global_manager.h"
 
 UARTHandler::UARTHandler():
-buffer_(512),
+buffer_(256),
 vsprintf_buffer_(""),
 msg_buffered_(false)
 {

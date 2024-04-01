@@ -71,17 +71,22 @@ int main(void)
 
 	RCC->IOPENR |= RCC_IOPENR_GPIOAEN;
 
-	GPIOC->MODER &= ~(GPIO_MODER_MODE2_1);
-	GPIOC->MODER |= GPIO_MODER_MODE2_0;
+	GPIOA->MODER &= ~(GPIO_MODER_MODE2_1);
+	GPIOA->MODER |= GPIO_MODER_MODE2_0;
+	
+	volatile size_t heap = xPortGetFreeHeapSize();
 
 	xTaskCreate(prvBlinkingTask, "Blinking", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-	
+
+	heap = xPortGetFreeHeapSize();	
 
 	GlobalManager &global_manager = GlobalManager::getInstance();
 	global_manager.createTasks();
 
 	MicroSwitches::microswitchesSetup();
 	Encoder::initEncoder();
+
+	heap = xPortGetFreeHeapSize();
 
     /* Start the scheduler. */
 	vTaskStartScheduler();
@@ -97,7 +102,7 @@ void prvBlinkingTask(void *pvParameters)
 	const TickType_t xDelay = pdMS_TO_TICKS(500);
 	for (;;)
 	{
-		GPIOC->ODR ^= GPIO_ODR_OD2;
+		GPIOA->ODR ^= GPIO_ODR_OD2;
 		vTaskDelay(xDelay);
 	}
 }
