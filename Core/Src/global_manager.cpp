@@ -71,7 +71,7 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
 
     switch(call.id){
         case MANAGER_CALL_IDS::TEST_ID:
-            print("tested %d", 0);
+            print("tested %d\n", 0);
             break;
         
         case MANAGER_CALL_IDS::GUIDE_DONE_ID:
