@@ -111,11 +111,11 @@ void UARTHandler::readFromQueue(const QueueHandle_t &queue)
 
 void UARTHandler::vUARTTask(void *pvParameters)
 {
-	task_params::PARAMS_uart_t uart_params = *static_cast<task_params::PARAMS_uart_t *>(pvParameters);
+	task_params::PARAMS_uart_t *uart_params = static_cast<task_params::PARAMS_uart_t *>(pvParameters);
     UARTHandler &uart_handler = UARTHandler::getInstance();
 
     while(true)
     {
-        uart_handler.writeToQueue(uart_params.transmit_queue);
+        uart_handler.writeToQueue(uart_params->transmit_queue);
     }
 }

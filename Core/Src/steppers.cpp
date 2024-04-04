@@ -44,8 +44,8 @@ void DrumStepper::switchEnable(bool enabled)
 
 void DrumStepper::vStepperDrumTask(void *pvParameters)
 {
-    task_params::PARAMS_stepper_t stepper_params = *static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
-    DrumStepper drum_stepper(stepper_params.steps, stepper_params.frequency, stepper_params.call_access);
+    task_params::PARAMS_stepper_t *stepper_params = static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
+    DrumStepper drum_stepper(stepper_params->steps, stepper_params->frequency, stepper_params->call_access);
 
     // print("Drum task started\n");
 
@@ -97,8 +97,8 @@ void GuideStepper::switchEnable(bool enabled)
 
 void GuideStepper::vStepperGuideTask(void *pvParameters)
 {
-    task_params::PARAMS_stepper_t stepper_params = *static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
-    GuideStepper guide_stepper(stepper_params.steps, stepper_params.frequency, stepper_params.call_access);
+    task_params::PARAMS_stepper_t *stepper_params = static_cast<task_params::PARAMS_stepper_t *>(pvParameters);
+    GuideStepper guide_stepper(stepper_params->steps, stepper_params->frequency, stepper_params->call_access);
 
     // print("Guide task started\n");
 

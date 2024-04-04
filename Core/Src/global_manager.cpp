@@ -29,14 +29,14 @@ GlobalManager &GlobalManager::getInstance()
 
 void GlobalManager::vManagerTask(void *pvParameters)
 {
-    task_params::PARAMS_manager_t manager_params = *static_cast<task_params::PARAMS_manager_t *>(pvParameters);
+    task_params::PARAMS_manager_t *manager_params = static_cast<task_params::PARAMS_manager_t *>(pvParameters);
     GlobalManager &manager = GlobalManager::getInstance();
 
     while(true)
     {
-        xSemaphoreTake(manager_params.call_access.calls_semaphore, portMAX_DELAY);
+        xSemaphoreTake(manager_params->call_access.calls_semaphore, portMAX_DELAY);
 
-        manager.readCall(manager_params.call_access.calls_queue);
+        manager.readCall(manager_params->call_access.calls_queue);
     }
 }
 

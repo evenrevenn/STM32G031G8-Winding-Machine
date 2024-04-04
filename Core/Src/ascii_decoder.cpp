@@ -103,11 +103,11 @@ bool AsciiDecoder::parseCommand(const char *ascii_command)
 
 void AsciiDecoder::vDecoderTask(void *pvParameters)
 {
-    task_params::PARAMS_decoder_t decoder_params = *static_cast<task_params::PARAMS_decoder_t *>(pvParameters);
-    AsciiDecoder decoder(decoder_params.call_access);
+    task_params::PARAMS_decoder_t *decoder_params = static_cast<task_params::PARAMS_decoder_t *>(pvParameters);
+    AsciiDecoder decoder(decoder_params->call_access);
 
     while(true)
     {
-        decoder.readFromQueue(decoder_params.receive_queue);
+        decoder.readFromQueue(decoder_params->receive_queue);
     }
 }
