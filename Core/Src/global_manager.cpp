@@ -71,7 +71,7 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
 
     switch(call.id){
         case MANAGER_CALL_IDS::TEST_ID:
-            print("tested %d\n", 0);
+            print("tested %s %s\n", "000", "111");
             break;
         
         case MANAGER_CALL_IDS::GUIDE_DONE_ID:
@@ -220,7 +220,7 @@ bool GlobalManager::createUART()
         return false;
     }
 
-    return xTaskCreate(UARTHandler::vUARTTask, "UART task", 80, &PARAMS_uart_, 2, &TASK_HANDLE_uart_);
+    return xTaskCreate(UARTHandler::vUARTTask, "UART task", configMINIMAL_STACK_SIZE, &PARAMS_uart_, 2, &TASK_HANDLE_uart_);
 }
 
 bool GlobalManager::createDecoder()
@@ -231,7 +231,7 @@ bool GlobalManager::createDecoder()
         return false;
     }
 
-    return xTaskCreate(AsciiDecoder::vDecoderTask, "Decoder task", 100, &PARAMS_decoder_, 2, &TASK_HANDLE_uart_);
+    return xTaskCreate(AsciiDecoder::vDecoderTask, "Decoder task", configMINIMAL_STACK_SIZE, &PARAMS_decoder_, 2, &TASK_HANDLE_decoder_);
 }
 
 bool GlobalManager::createSteppers()
