@@ -57,6 +57,7 @@
 #define configUSE_TRACE_FACILITY	1
 #define configUSE_16_BIT_TICKS		0
 #define configIDLE_SHOULD_YIELD		1
+#define configRECORD_STACK_HIGH_ADDRESS     1
 
 
 #define configUSE_MUTEXES				0

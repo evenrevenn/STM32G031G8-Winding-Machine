@@ -9,6 +9,7 @@
 			"servertype": "openocd",
 			"executable": "./build/Winding_Machine.elf",
 			"svdFile": "STM32G031.svd",
+			"rtos": "FreeRTOS",
 			"configFiles": [
 				"interface/stlink.cfg",
 				"target/stm32g0x.cfg"

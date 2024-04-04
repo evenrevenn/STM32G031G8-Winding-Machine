@@ -74,19 +74,14 @@ int main(void)
 	GPIOA->MODER &= ~(GPIO_MODER_MODE2_1);
 	GPIOA->MODER |= GPIO_MODER_MODE2_0;
 	
-	volatile size_t heap = xPortGetFreeHeapSize();
-
 	xTaskCreate(prvBlinkingTask, "Blinking", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
-	heap = xPortGetFreeHeapSize();	
 
 	GlobalManager &global_manager = GlobalManager::getInstance();
 	global_manager.createTasks();
 
 	MicroSwitches::microswitchesSetup();
 	Encoder::initEncoder();
-
-	heap = xPortGetFreeHeapSize();
 
     /* Start the scheduler. */
 	vTaskStartScheduler();
