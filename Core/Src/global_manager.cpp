@@ -150,7 +150,7 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
 
         case MANAGER_CALL_IDS::DIRECTION_GUIDE_CHANGE_ID:
             GuideStepper::changeDirection((Stepper::Direction)call.value);
-            call.value == Stepper::DIR_FORWARD ? print("Guide direction changed to Forward\n") : print("Drum direction changed to Backward\n");
+            call.value == Stepper::DIR_FORWARD ? print("Guide direction changed to Forward\n") : print("Guide direction changed to Backward\n");
             break;
 
         case MANAGER_CALL_IDS::WAVE_PAUSE_ID:
@@ -182,6 +182,18 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
             {/* L(mm) = s(steps) * 2(mm/rot) / 400(steps/rot)  */
             uint32_t mm_left = guide_steps_ * MM_PER_ROTATION / STEPS_PER_ROTATION;
             print("Waving continued, mm left: %u\n", mm_left);}
+            break;
+        
+        case MANAGER_CALL_IDS::HEAP_INFO_ID:
+            print("Heap free size: %u\n", xPortGetFreeHeapSize());
+            break;
+
+        case MANAGER_CALL_IDS::STACK_INFO_ID:
+            print("Manager stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_manager_));
+            print("UART stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_uart_));
+            print("Decoder stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_decoder_));
+            print("Guide stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_stepper_guide_));
+            print("Drum stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_stepper_drum_));
             break;
     }
 }

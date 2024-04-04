@@ -89,6 +89,14 @@ bool AsciiDecoder::parseCommand(const char *ascii_command)
         call_struct_.id = MANAGER_CALL_IDS::WAVE_CONTINUE_ID;
         return true;
     }
+    else if (!strcmp(ascii_command, "GetHeapInfo")){
+        call_struct_.id = MANAGER_CALL_IDS::HEAP_INFO_ID;
+        return true;
+    }
+    else if (!strcmp(ascii_command, "GetStackInfo")){
+        call_struct_.id = MANAGER_CALL_IDS::STACK_INFO_ID;
+        return true;
+    }
 
     return false;
 }
