@@ -195,6 +195,13 @@ void GlobalManager::readCall(QueueHandle_t call_queue)
             print("Guide stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_stepper_guide_));
             print("Drum stack: %u\n", uxTaskGetStackHighWaterMark(TASK_HANDLE_stepper_drum_));
             break;
+
+        case MANAGER_CALL_IDS::GUIDE_RESET_ID:
+            GuideStepper::switchEnable(true);
+            GuideStepper::changeDirection(Stepper::Direction::DIR_BACKWARD);
+            guide_steps_ = __UINT32_MAX__;
+            vTaskResume(TASK_HANDLE_stepper_guide_);
+            break;
     }
 }
 

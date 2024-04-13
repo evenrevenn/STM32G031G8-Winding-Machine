@@ -97,6 +97,10 @@ bool AsciiDecoder::parseCommand(const char *ascii_command)
         call_struct_.id = MANAGER_CALL_IDS::STACK_INFO_ID;
         return true;
     }
+    else if (!strcmp(ascii_command, "ResetGuidePos")){
+        call_struct_.id = MANAGER_CALL_IDS::GUIDE_RESET_ID;
+        return true;
+    }
 
     return false;
 }
