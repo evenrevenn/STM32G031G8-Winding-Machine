@@ -16,9 +16,10 @@ namespace MicroSwitches
     void leftMicroSwitchHandler(); 
     void rightMicroSwitchHandler();
     void microswitchesSetup();
+
+    bool readLeftMicroSwitches();
+    bool readRightMicroSwitches();
 } //namespace MicroSwitches
-
-
 
 inline void Encoder::leftTurnHandler()
 {
@@ -77,6 +78,16 @@ inline void MicroSwitches::rightMicroSwitchHandler()
 
     call.id = MANAGER_CALL_IDS::WAVE_STOP_ID;
     access.sendCallFromISR(call);
+}
+
+inline bool MicroSwitches::readLeftMicroSwitches() 
+{
+    return (GPIOA->IDR & (GPIO_IDR_ID0 | GPIO_IDR_ID1)) == (GPIO_IDR_ID0 | GPIO_IDR_ID1);
+}
+
+inline bool MicroSwitches::readRightMicroSwitches() 
+{
+    return (GPIOB->IDR & (GPIO_IDR_ID4 | GPIO_IDR_ID5)) == (GPIO_IDR_ID4 | GPIO_IDR_ID5);
 }
 
 #endif //EXTERNALS_H

@@ -1,5 +1,6 @@
 #include "steppers.h"
 #include "UART_handler.h"
+#include "external.h"
 
 /*-------------------------------------------------------*/
 /* STEPPER BASE */
@@ -111,6 +112,13 @@ void GuideStepper::vStepperGuideTask(void *pvParameters)
 void GuideStepper::callbackGuide()
 {
     if (steps_ == 0){
+        MANAGER_CALL done_call{MANAGER_CALL_IDS::GUIDE_DONE_ID, 0};
+        manager_access_.sendCall(done_call);
+
+        return;
+    }
+    
+    if (!((GPIOA->ODR & GPIO_ODR_OD3) ? MicroSwitches::readLeftMicroSwitches() : MicroSwitches::readRightMicroSwitches())){
         MANAGER_CALL done_call{MANAGER_CALL_IDS::GUIDE_DONE_ID, 0};
         manager_access_.sendCall(done_call);
 
